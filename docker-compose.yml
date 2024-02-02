@@ -1,0 +1,36 @@
+version: '3'
+services:
+    backend:
+        build:
+            context: .
+        container_name: finance-app
+        volumes:
+            - ./:/var/www/html
+            - ./database/migrations:/var/www/html/database/migrations
+        #    command: sh -c "php artisan serve --host=0.0.0.0 --port=9000 && php artisan migrate --force"
+        entrypoint: sh -c "sleep 30 &&  composer install && php artisan migrate &&  php artisan passport:install && php artisan key:generate && php artisan db:seed && php artisan serve --host=0.0.0.0 --port=9000"
+        ports:
+            - 9000:9000
+
+        depends_on:
+            - db
+#        dns:
+#            - 8.8.8.8 # Use your preferred DNS server IP address
+        networks:
+            -  my-network
+    db:
+        image: mysql:8.0
+        container_name: mysql-db
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: financeapp 
+            MYSQL_USER: finance
+            MYSQL_PASSWORD: abc
+        ports:
+            - 3306:3306
+        networks:
+            - my-network
+
+networks:
+    my-network:
